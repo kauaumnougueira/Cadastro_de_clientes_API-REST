@@ -19,52 +19,75 @@ const fetchGet = () => {
     }
 
 function alimentarTabela(data){
-    const table = document.getElementById('tbody-tabela-clientes')
     const tableMae = document.getElementById('tabela-clientes')
-
-    if(data.length == 0){
+    let tam = data.length
+    if(tam == 0){
         tableMae.innerHTML = "NENHUM USUÁRIO ENCONTRADO"
     }else{
-        data.forEach(cliente => {
-            if(cliente.id <= 10){
-                //console.log(cliente) //teste
-                const linha = document.createElement('tr')
-                linha.style.cursor = "pointer"
-                
-                linha.setAttribute('scope', 'row')
-                const colunas = [cliente.id, cliente.nome, cliente.email, cliente.cpf]
-                colunas.forEach(coluna => {
-                    const celula = document.createElement('td')
-                    celula.textContent = coluna
-                    celula.addEventListener('click', () =>{
-                        editar(cliente.id, 0)
-                    })
-                    linha.appendChild(celula)
-                })
-                const acoes = document.createElement('td')
-                const iconeEditar = document.createElement('span')
-                const iconeExcluir = document.createElement('span')
-                iconeEditar.setAttribute('data-feather', 'edit')
-                iconeEditar.classList.add('data-feather', 'mr-3')
-                iconeEditar.setAttribute('style', 'cursor: pointer')
-                iconeEditar.setAttribute('onclick', 'editar(' + cliente.id + ','+ 1 +')')
-                iconeExcluir.setAttribute('data-feather', 'trash')
-                iconeExcluir.classList.add('data-feather', 'ml-2')
-                iconeExcluir.setAttribute('style', 'cursor: pointer')
-                iconeExcluir.setAttribute('onclick', 'excluir(' + cliente.id + ')')
-    
-                acoes.appendChild(iconeEditar)
-                acoes.appendChild(iconeExcluir)
-                linha.appendChild(acoes)
-                
-                table.appendChild(linha)
-                
-            }
-        });
+        criarTabela(data, 1)
+        criarPaginacao(data)
     }
     feather.replace()
 }
 window.onload = fetchGet
+
+function criarTabela(data, mult){
+    const table = document.getElementById('tbody-tabela-clientes')
+    data.forEach(cliente => {
+        if(cliente.id * mult <= 10){
+            //console.log(cliente) //teste
+            const linha = document.createElement('tr')
+            linha.style.cursor = "pointer"
+            
+            linha.setAttribute('scope', 'row')
+            const colunas = [cliente.id, cliente.nome, cliente.email, cliente.cpf]
+            colunas.forEach(coluna => {
+                const celula = document.createElement('td')
+                celula.textContent = coluna
+                celula.addEventListener('click', () =>{
+                    editar(cliente.id, 0)
+                })
+                linha.appendChild(celula)
+            })
+            const acoes = document.createElement('td')
+            const iconeEditar = document.createElement('span')
+            const iconeExcluir = document.createElement('span')
+            iconeEditar.setAttribute('data-feather', 'edit')
+            iconeEditar.classList.add('data-feather', 'mr-3')
+            iconeEditar.setAttribute('style', 'cursor: pointer')
+            iconeEditar.setAttribute('onclick', 'editar(' + cliente.id + ','+ 1 +')')
+            iconeExcluir.setAttribute('data-feather', 'trash')
+            iconeExcluir.classList.add('data-feather', 'ml-2')
+            iconeExcluir.setAttribute('style', 'cursor: pointer')
+            iconeExcluir.setAttribute('onclick', 'excluir(' + cliente.id + ')')
+
+            acoes.appendChild(iconeEditar)
+            acoes.appendChild(iconeExcluir)
+            linha.appendChild(acoes)
+            
+            table.appendChild(linha)
+            
+        }
+    });
+}
+
+function criarPaginacao(data){
+    let tam = data.length
+    let divid = Math.ceil(tam/10) //arredonda pra cima - quantidade de indices
+
+    const divPag = document.getElementById("pagination")
+    for(let i = 1; i <= divid; i++){
+        const li = document.createElement('li')
+        li.classList.add('page-item')
+        const a = document.createElement('a')
+        li.classList.add('page-link')
+        a.innerHTML = i
+
+        li.appendChild(a)
+        divPag.appendChild(li)
+    }
+}
+
 //excluir
 function excluir(id){
     const header = document.getElementById('header')
