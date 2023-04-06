@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <title> Cliente </title>
+</head>
+<body class="bg-dark">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-12">
+                <div class="pb-2 mb-3 text-center border-bottom">
+                    <h1 class="text-white" id="perfilde"></h1>
+                </div>    
+                <div class="card-dark shadow-lg">
+                    <div class="card-body"> 
+                        <form id="edicao-form" >
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Nome</label>
+                                        <div class="input-group-text bg-transparent p-0">
+                                            <input type="text" name="nome" class="form-control border-0" id="nome" required/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Nascimento</label>
+                                        <div class="input-group-text bg-transparent p-0">
+                                            <input type="text" name="nascimento" class="form-control border-0" id="nascimento" required/>
+                                        </div>
+                                    </div>    
+                                    <div class="form-group">
+                                        <label>CPF</label>
+                                        <div class="input-group-text bg-transparent p-0">
+                                            <input type="text" name="cpf" class="form-control border-0" id="cpf" required/>
+                                        </div>
+                                    </div>    
+                                    <div class="form-group">
+                                        <label>Celular</label>
+                                        <div class="input-group-text bg-transparent p-0">
+                                            <input type="text" name="celular" id="celular" class="form-control border-0" id="celular" required/>
+                                        </div>
+                                    </div>    
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Endereço</label>
+                                        <div class="input-group-text bg-transparent p-0">
+                                            <input type="text" name="endereco" class="form-control border-0" id="endereco" required/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>E-mail</label>
+                                        <div class="input-group-text bg-transparent p-0">
+                                            <input type="email" name="email" class="form-control border-0" id="email" required/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Observação</label>
+                                        <textarea name="observacao" maxlength="300" rows="4" class="form-control" id="observacao" ></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group" id="button-sec">
+                                <button type="submit" class="btn btn-dark col-md-12" id="btn">Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+   </div>
+</body>
+<script src="js/validacao.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.11/jquery.mask.min.js"></script>
+<script>
+//mascaras
+$("#celular").mask("(00) 0 0000-0000");
+$("#cpf").mask("000.000.000-00");
+$("#nascimento").mask("00/00/0000");
+
+const params = new URLSearchParams(window.location.search);
+const id = params.get('id');
+const ver = params.get('ver');
+const editar = params.get('editar');
+
+if(ver == 1){
+    const inputs = document.getElementsByTagName('input')
+    for(let i = 0; i < inputs.length; i++){
+        inputs[i].disabled = true
+    }
+    const textarea = document.getElementById('observacao')
+    textarea.setAttribute('disabled', true)
+
+    const btn = document.getElementById('btn')
+    btn.style.display = 'none'
+
+    const btn_sec = document.getElementById('button-sec')
+    const voltar = document.createElement('button')
+    voltar.textContent = "Voltar"
+    voltar.classList.add('btn', 'btn-dark', 'col-md-12')
+    voltar.addEventListener('click', (event) =>{
+        event.preventDefault();
+        window.location.href = "painel.html"
+    })
+    btn_sec.appendChild(voltar)
+}
+
+const form = document.getElementById('edicao-form');
+const token = document.head.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+if(editar == 1){
+    
+form.addEventListener('submit', (event) =>{
+    event.preventDefault();
+
+    const formData = new FormData(form);
+    //tratamento 
+    const cpf = formData.get('cpf')
+    const nome = formData.get('nome')
+    const regex = /\W|_/
+    if(validarNome(nome)){
+        
+        if(validarCPF(cpf)){
+            //ajax para servidor php
+            fetch('http://127.0.0.1:8000/api/update/'+id, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': token
+                },
+                mode: 'cors'
+            })
+            .then(response => response.json())
+            .then(data => {
+                //console.log(data);
+                window.alert("cliente atualizado com sucesso!")
+                window.location.href = "painel.html"
+            })
+            .catch(error => {
+                console.error(error);
+            });
+        }else{
+            window.alert("CPF inválido!")
+        }
+    }else{
+        window.alert("nome inválido, contém caracteres especiais")
+    }
+})
+}
+
+//pega os dados do cliente e coloca nos inputs
+if(id){
+    const fetchGetId = () =>{
+        fetch('http://127.0.0.1:8000/api/cliente/'+id, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            mode: 'cors'
+        })
+        .then(response => response.json())
+        .then(data => {
+            //console.log(data);
+            alimentarForm(data)
+        })
+        .catch(error => {
+            console.error(error);
+        });
+    }
+    window.onload = fetchGetId
+    
+    function alimentarForm(data){
+        const perfilde = document.getElementById('perfilde')
+        perfilde.textContent = "Perfil de "+data[0].nome
+    
+        const nome = document.getElementById('nome')
+        nome.setAttribute('value', data[0].nome)
+        const nascimento = document.getElementById('nascimento')
+        nascimento.setAttribute('value', data[0].nascimento)
+        const email = document.getElementById('email')
+        email.setAttribute('value', data[0].email)
+        const celular = document.getElementById('celular')
+        celular.setAttribute('value', data[0].celular)
+        const cpf = document.getElementById('cpf')
+        cpf.setAttribute('value', data[0].cpf)
+        const endereco = document.getElementById('endereco')
+        endereco.setAttribute('value', data[0].endereco)
+        const observacao = document.getElementById('observacao')
+        if(data[0].observacao !== null){
+            observacao.textContent = data[0].observacao
+        }
+        
+    }
+}
+
+</script>
+<style>
+    body{
+        color: white;
+    }
+</style>
+</html>

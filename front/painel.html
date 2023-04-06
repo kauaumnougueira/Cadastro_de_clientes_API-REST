@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="js/tabela.js"></script>
+    <title>Painel</title>
+</head>
+<body class="bg-dark">
+    <div class="container shadow-lg">
+        <div class="row justify-content-center">
+            <div class="col-md-12 mt-2">
+                <header class="card-body" id="header">
+                    <form id="form-pesquisa">
+                        <div class="input-group-text form-group col-md-12 bg-transparent border-0">
+                            <input type="text" class="form-control col-md-10" name="inp-pesq" placeholder="pesquisar clientes"/>
+                            <button type="submit" class="ml-2 col-md-2 btn btn-light">Pesquisar</button>
+                        </div>
+                    </form>    
+                </header>
+                <table id="tabela-clientes" class="table table-hover table-dark">
+                    <thead class="shadow">
+                        <tr>
+                            <th class="col-md-1">ID</th>
+                            <th class="col-md-4">Nome</th>
+                            <th class="col-md-3">Email</th>
+                            <th class="col-md-3">CPF</th>
+                            <th class="col-md-1">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-tabela-clientes">
+                        
+                    </tbody>
+                    <div id="modal-confirm">
+                    
+                    </div>
+                </table>
+                <div class="row m-4">
+                    <div class="col"></div>
+                    <button class="btn btn-light col" onclick="cadastro()"> Cadastrar Novo Cliente </button>
+                    <div class="col"></div>
+                </div>
+            </div>
+        </div>       
+    </div>
+<script>
+function cadastro(){
+    window.location.href = "index.html"
+}
+const token = document.head.querySelector('meta[name="csrf-token"]').getAttribute('content');
+const form = document.getElementById('form-pesquisa')
+const table = document.getElementById('tbody-tabela-clientes')
+
+form.addEventListener('submit', (event)=>{
+    event.preventDefault()
+    
+    const formData = new FormData(form)
+
+    table.innerHTML = ' '
+    
+    fetch('http://127.0.0.1:8000/api/pesquisa/' + formData.get('inp-pesq'), {
+        method: 'GET',
+        headers: {
+            'X-CSRF-TOKEN': token,
+            'Content-Type': 'application/json'
+        },
+        mode: 'cors'
+    })
+    .then(response => response.json())
+    .then(data => {
+        //console.log(data);
+        alimentarTabela(data)
+    })
+    .catch(error => {
+        console.error(error);
+    });
+})       
+</script>
+
+<!-- Icons -->
+<script src="https://unpkg.com/feather-icons/dist/feather.min.js"></script>
+<script>
+    feather.replace()
+</script>
+<style>
+body{
+    color: white
+}
+.data-feather{
+    width: 20px;
+    height: 20px;
+    vertical-align: text-bottom;
+}
+
+</style>
+</body>
+</html>
